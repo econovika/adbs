@@ -16,7 +16,12 @@ if command -v goose &> /dev/null; then
   goose -dir migrations clickhouse "${CH_URL}" up
 else
   echo "goose binary not found locally, executing migration SQL via HTTP query..."
-  curl -s -f -X POST "${CH_URL}" --data-binary "@migrations/00001_create_energosbyt_tables.sql" || true
+  awk '/-- \+goose Up/{flag=1;next}/-- \+goose Down/{flag=0}flag' migrations/00001_create_energosbyt_tables.sql | \
+    while IFS= read -r -d ';' stmt; do
+      if [[ -n "${stmt//[[:space:]]/}" ]]; then
+        curl -s --fail-with-body -X POST "${CH_URL}" --data-binary "${stmt};"
+      fi
+    done
 fi
 
 echo "Loading CSV files into ClickHouse..."
