@@ -31,7 +31,7 @@ gen:
 	@if [ -f bin/generator ]; then \
 		./bin/generator; \
 	else \
-		go run ./cmd/generator/main.go; \
+		go run ./service/cmd/generator/main.go; \
 	fi
 
 # Loads CSV datasets into ClickHouse
